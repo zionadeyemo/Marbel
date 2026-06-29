@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { SkillLevel } from "../../types";
+import { handleKnownError, handleUnexpectedError, type ErrorContext } from "../../lib/server-error";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+const REQUEST_PATH = "/api/generate-workflow";
 
 const SKILL_INSTRUCTIONS: Record<SkillLevel, string> = {
   beginner: `The user is a BEGINNER.
@@ -163,12 +166,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const context: ErrorContext = {
+    requestPath: REQUEST_PATH,
+    skillLevel,
+    documentLength: document.length,
+  };
+
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return NextResponse.json(
-      { error: "Server is missing GEMINI_API_KEY. Please configure your environment variables." },
-      { status: 500 }
+    return handleUnexpectedError(
+      new Error("Server is missing GEMINI_API_KEY environment variable."),
+      context,
+      "Something went wrong."
     );
   }
 
@@ -190,43 +200,42 @@ export async function POST(request: NextRequest) {
     const text = result.response.text();
 
     if (!text || !text.trim()) {
-      return NextResponse.json(
-        { error: "Gemini returned an empty response. Please try again." },
-        { status: 502 }
+      return handleKnownError(
+        new Error("Gemini returned an empty response. Please try again."),
+        502,
+        context
       );
     }
 
     let plan;
     try {
       plan = JSON.parse(text);
-    } catch {
-      return NextResponse.json(
-        { error: "Gemini returned a malformed plan. Please try again." },
-        { status: 502 }
+    } catch (parseErr) {
+      return handleKnownError(
+        new Error("Gemini returned a malformed plan. Please try again."),
+        502,
+        { ...context, parseError: parseErr instanceof Error ? parseErr.message : String(parseErr) }
       );
     }
 
     if (!plan.phases || !Array.isArray(plan.phases) || plan.phases.length === 0) {
-      return NextResponse.json(
-        { error: "Gemini did not return any executable steps. Please try again." },
-        { status: 502 }
+      return handleKnownError(
+        new Error("Gemini did not return any executable steps. Please try again."),
+        502,
+        context
       );
     }
 
     return NextResponse.json({ plan });
   } catch (err: unknown) {
     if (err instanceof Error && err.message === "TIMEOUT") {
-      return NextResponse.json(
-        { error: "The request timed out while generating your workflow. Please try again." },
-        { status: 504 }
+      return handleKnownError(
+        new Error("The request timed out while generating your workflow. Please try again."),
+        504,
+        context
       );
     }
 
-    console.error("Gemini generation failed:", err);
-
-    return NextResponse.json(
-      { error: "Failed to generate workflow. Please check your API key and try again." },
-      { status: 502 }
-    );
+    return handleUnexpectedError(err, context, "Something went wrong.");
   }
 }

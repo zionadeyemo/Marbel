@@ -14,6 +14,7 @@ export default function Home() {
   const [skillLevel, setSkillLevel] = useState<SkillLevel>("intermediate");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
   const [plan, setPlan] = useState<WorkflowPlan | null>(null);
 
   const handleGenerate = async () => {
@@ -21,10 +22,12 @@ export default function Home() {
 
     if (!trimmed) {
       setError("Please paste or upload some technical documentation before generating a plan.");
+      setErrorId(null);
       return;
     }
 
     setError(null);
+    setErrorId(null);
     setLoading(true);
     setPlan(null);
 
@@ -37,14 +40,20 @@ export default function Home() {
 
       const data = await res.json();
 
+      if (data.debug) {
+        console.error("[generate-workflow] failed", data.debug);
+      }
+
       if (!res.ok) {
         setError(data.error ?? "Something went wrong. Please try again.");
+        setErrorId(data.errorId ?? null);
         return;
       }
 
       setPlan(data.plan);
     } catch {
       setError("Network error. Please check your connection and try again.");
+      setErrorId(null);
     } finally {
       setLoading(false);
     }
@@ -53,6 +62,7 @@ export default function Home() {
   const handleReset = () => {
     setPlan(null);
     setError(null);
+    setErrorId(null);
     setDocument("");
     setUploadedDocument(null);
   };
@@ -133,7 +143,16 @@ export default function Home() {
 
               {error && (
                 <div className="rounded-md border border-orange-700 bg-orange-500/10 px-4 py-3 text-sm font-medium text-orange-300">
-                  {error}
+                  {errorId ? (
+                    <>
+                      <p>Something went wrong.</p>
+                      <p className="mt-1 font-mono text-xs text-orange-400">
+                        Error ID: {errorId}
+                      </p>
+                    </>
+                  ) : (
+                    error
+                  )}
                 </div>
               )}
 

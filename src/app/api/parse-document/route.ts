@@ -11,27 +11,23 @@ import {
   buildPdfDocument,
   ocrPdf,
 } from "../../lib/parsers";
+import { handleKnownError, handleUnexpectedError, type ErrorContext } from "../../lib/server-error";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
+const REQUEST_PATH = "/api/parse-document";
 
-function errorResponse(err: unknown) {
-  if (
-    err instanceof UnsupportedFileTypeError ||
-    err instanceof EmptyDocumentError ||
-    err instanceof CorruptedFileError ||
-    err instanceof OcrFailedError
-  ) {
-    return NextResponse.json({ error: err.message }, { status: 422 });
-  }
+const KNOWN_ERROR_TYPES = [
+  UnsupportedFileTypeError,
+  EmptyDocumentError,
+  CorruptedFileError,
+  OcrFailedError,
+];
 
-  console.error("Document parsing failed:", err);
-  return NextResponse.json(
-    { error: "Unable to read this document." },
-    { status: 500 }
-  );
+function getExtension(filename: string): string {
+  return filename.includes(".") ? filename.split(".").pop()!.toLowerCase() : "(none)";
 }
 
 export async function POST(request: NextRequest) {
@@ -60,19 +56,32 @@ export async function POST(request: NextRequest) {
   const filename = file.name;
   const buffer = Buffer.from(await file.arrayBuffer());
 
+  const context: ErrorContext = {
+    requestPath: REQUEST_PATH,
+    filename,
+    mimeType: file.type || "(empty)",
+    extension: getExtension(filename),
+    fileSizeBytes: buffer.length,
+    phase,
+    parserSelected: "(not yet determined)",
+  };
+
   try {
     const fileType = detectFileType(filename);
 
     if (fileType !== "pdf") {
+      context.parserSelected = `parseDocument → parse${fileType.toUpperCase()}`;
       const document = await parseDocument(buffer, filename);
       return NextResponse.json({ status: "done", document });
     }
 
     if (phase === "ocr") {
+      context.parserSelected = "ocrPdf (pdfjs-dist render + tesseract.js)";
       const document = await ocrPdf(buffer, filename);
       return NextResponse.json({ status: "done", document });
     }
 
+    context.parserSelected = "getPdfPageTexts (pdfjs-dist text layer)";
     const { pages, total } = await getPdfPageTexts(buffer);
 
     if (isScannedPdf(pages)) {
@@ -82,9 +91,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    context.parserSelected = "buildPdfDocument (header/footer strip)";
     const document = buildPdfDocument(pages, total, filename, buffer.length);
     return NextResponse.json({ status: "done", document });
   } catch (err) {
-    return errorResponse(err);
+    const knownErrorType = KNOWN_ERROR_TYPES.find((ErrorType) => err instanceof ErrorType);
+
+    if (knownErrorType && err instanceof Error) {
+      return handleKnownError(err, 422, context);
+    }
+
+    return handleUnexpectedError(err, context, "Unable to process this document.");
   }
 }

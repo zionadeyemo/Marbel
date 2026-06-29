@@ -8,7 +8,16 @@ type UploadState =
   | { phase: "uploading" }
   | { phase: "ocr" }
   | { phase: "done"; document: ParsedDocument }
-  | { phase: "error"; message: string };
+  | { phase: "error"; message: string; errorId?: string };
+
+class UploadError extends Error {
+  errorId?: string;
+
+  constructor(message: string, errorId?: string) {
+    super(message);
+    this.errorId = errorId;
+  }
+}
 
 const ACCEPTED_EXTENSIONS = [".pdf", ".docx", ".pptx", ".txt", ".md"];
 
@@ -38,7 +47,10 @@ async function uploadFile(file: File, phase?: "ocr") {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.error ?? "Unable to read this document.");
+    if (data.debug) {
+      console.error("[parse-document] failed", data.debug);
+    }
+    throw new UploadError(data.error ?? "Unable to read this document.", data.errorId);
   }
 
   return data as
@@ -76,6 +88,7 @@ export default function DocumentUpload({
       setState({
         phase: "error",
         message: err instanceof Error ? err.message : "Unable to read this document.",
+        errorId: err instanceof UploadError ? err.errorId : undefined,
       });
     }
   }, [onExtracted]);
@@ -200,7 +213,16 @@ export default function DocumentUpload({
 
       {state.phase === "error" && (
         <div className="mt-3 rounded-md border border-orange-700 bg-orange-500/10 px-4 py-3 text-sm font-medium text-orange-300">
-          {state.message}
+          {state.errorId ? (
+            <>
+              <p>Something went wrong.</p>
+              <p className="mt-1 font-mono text-xs text-orange-400">
+                Error ID: {state.errorId}
+              </p>
+            </>
+          ) : (
+            state.message
+          )}
         </div>
       )}
     </div>
