@@ -1,5 +1,17 @@
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { TextItem } from "pdfjs-dist/types/src/display/api";
+
+// pdfjs-dist in Node.js sets up a "fake worker" that runs pdf.worker.mjs
+// in-process.  Its default workerSrc is the RELATIVE path "./pdf.worker.mjs",
+// which only resolves correctly relative to pdf.mjs itself.  On Vercel,
+// @vercel/nft skips that import (because pdfjs marks it /*webpackIgnore:true*/)
+// and the worker file is never included in the deployment bundle.
+//
+// Overriding workerSrc with the BARE MODULE SPECIFIER makes pdfjs use Node.js
+// module resolution to find the file in node_modules/ — which works in every
+// environment as long as the file is present (guaranteed by
+// outputFileTracingIncludes in next.config.mjs).
+pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs-dist/legacy/build/pdf.worker.mjs";
 import {
   CorruptedFileError,
   EmptyDocumentError,

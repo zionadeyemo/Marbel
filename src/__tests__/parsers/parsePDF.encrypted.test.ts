@@ -10,6 +10,9 @@ import { describe, it, expect, vi } from "vitest";
 
 // Must be declared before any import that transitively imports parsePDF.
 vi.mock("pdfjs-dist/legacy/build/pdf.mjs", () => ({
+  // parsePDF.ts sets GlobalWorkerOptions.workerSrc at module init; the mock
+  // must expose it with a writable workerSrc so the assignment doesn't throw.
+  GlobalWorkerOptions: { workerSrc: "" },
   getDocument: vi.fn(() => ({
     promise: Promise.reject(
       Object.assign(new Error("Password required"), {
