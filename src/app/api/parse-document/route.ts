@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   CorruptedFileError,
   EmptyDocumentError,
+  EncryptedPdfError,
   OcrFailedError,
   UnsupportedFileTypeError,
   detectFileType,
@@ -23,6 +24,7 @@ const KNOWN_ERROR_TYPES = [
   UnsupportedFileTypeError,
   EmptyDocumentError,
   CorruptedFileError,
+  EncryptedPdfError,
   OcrFailedError,
 ];
 
@@ -66,8 +68,16 @@ export async function POST(request: NextRequest) {
     parserSelected: "(not yet determined)",
   };
 
+  console.log("[parse-document] request received", {
+    filename,
+    fileSizeBytes: buffer.length,
+    mimeType: file.type || "(empty)",
+    phase,
+  });
+
   try {
     const fileType = detectFileType(filename);
+    console.log("[parse-document] fileType detected", { filename, fileType });
 
     if (fileType !== "pdf") {
       context.parserSelected = `parseDocument → parse${fileType.toUpperCase()}`;
@@ -81,20 +91,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "done", document });
     }
 
+    console.log("[parse-document] calling getPdfPageTexts", { filename });
     context.parserSelected = "getPdfPageTexts (pdfjs-dist text layer)";
     const { pages, total } = await getPdfPageTexts(buffer);
+    console.log("[parse-document] getPdfPageTexts returned", { total, pages: pages.length });
 
-    if (isScannedPdf(pages)) {
+    const scanned = isScannedPdf(pages);
+    console.log("[parse-document] isScannedPdf", {
+      scanned,
+      pageCharCounts: pages.map((p) => p.text.trim().length),
+    });
+
+    if (scanned) {
       return NextResponse.json({
         status: "needs_ocr",
         metadata: { filename, fileType: "pdf", sizeBytes: buffer.length, pages: total },
       });
     }
 
+    console.log("[parse-document] calling buildPdfDocument", { filename });
     context.parserSelected = "buildPdfDocument (header/footer strip)";
     const document = buildPdfDocument(pages, total, filename, buffer.length);
+    console.log("[parse-document] SUCCESS", { filename, chars: document.text.length });
     return NextResponse.json({ status: "done", document });
   } catch (err) {
+    console.error("[parse-document] CAUGHT ERROR", {
+      constructorName: (err as Error)?.constructor?.name,
+      message: (err as Error)?.message,
+      stack: (err as Error)?.stack,
+    });
+
     const knownErrorType = KNOWN_ERROR_TYPES.find((ErrorType) => err instanceof ErrorType);
 
     if (knownErrorType && err instanceof Error) {

@@ -1,13 +1,16 @@
 import mammoth from "mammoth";
 import { CorruptedFileError, EmptyDocumentError, type ParsedDocument } from "./types";
 
-// mammoth's bundled type declarations predate `convertToMarkdown`, which does
-// exist at runtime in the installed version — cast narrowly to call it.
+// mammoth 1.12's bundled declarations predate `convertToMarkdown`; it does
+// exist at runtime.  Cast narrowly so we can call it without "any".
 type MammothWithMarkdown = {
   convertToMarkdown: (input: { buffer: Buffer }) => Promise<{ value: string }>;
 };
 
 export async function parseDOCX(buffer: Buffer, filename: string): Promise<ParsedDocument> {
+  const t0 = Date.now();
+  console.log("[parser:docx] starting", { filename, sizeBytes: buffer.length });
+
   let markdown: string;
 
   try {
@@ -20,6 +23,13 @@ export async function parseDOCX(buffer: Buffer, filename: string): Promise<Parse
   if (!markdown) {
     throw new EmptyDocumentError();
   }
+
+  console.log("[parser:docx] done", {
+    filename,
+    chars: markdown.length,
+    durationMs: Date.now() - t0,
+    result: "success",
+  });
 
   return {
     text: markdown,
