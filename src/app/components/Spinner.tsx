@@ -1,8 +1,8 @@
 export default function Spinner() {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-20">
-      <div className="spinner h-10 w-10 rounded-full border-[3px] border-zinc-700 border-t-orange-500" />
-      <p className="text-sm font-medium uppercase tracking-widest text-zinc-500">
+    <div className="flex flex-col items-center justify-center gap-5 py-24">
+      <div className="spinner h-9 w-9 rounded-full border-2 border-beige border-t-charcoal" />
+      <p className="text-xs font-semibold uppercase tracking-widest text-taupe">
         Building execution plan…
       </p>
     </div>

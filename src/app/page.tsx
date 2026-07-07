@@ -68,45 +68,47 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-zinc-950">
-      <div className="border-b border-zinc-800 bg-zinc-900">
+    <main className="min-h-screen bg-ivory">
+      {/* Header */}
+      <header className="border-b border-beige bg-ivory">
         <div className="mx-auto max-w-5xl px-6 py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-orange-500 font-bold text-zinc-950">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center bg-charcoal font-bold text-ivory text-sm">
               M
             </div>
-            <span className="text-base font-bold uppercase tracking-widest text-zinc-100">
+            <span className="text-sm font-bold uppercase tracking-widest text-charcoal">
               Marbel
             </span>
-            <span className="ml-2 rounded-sm border border-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-              Guided Execution System
+            <span className="ml-1 text-xs font-semibold uppercase tracking-widest text-taupe">
+              Guided Execution
             </span>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="mx-auto max-w-5xl px-6 py-12">
+      <div className="mx-auto max-w-5xl px-6 py-16">
         {!plan && !loading && (
           <>
-            <div className="mx-auto max-w-2xl text-center">
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl">
-                Turn Documentation Into a Guided Mission
+            {/* Hero */}
+            <div className="mx-auto max-w-xl text-center">
+              <h1 className="font-serif text-4xl font-bold leading-tight text-charcoal sm:text-5xl">
+                Turn documentation<br />into guided action.
               </h1>
-              <p className="mt-4 text-base leading-relaxed text-zinc-400">
-                Paste installation guides, SOPs, SOWs, manuals, or technical
-                procedures. Marbel breaks the job into phases and walks you
-                through it one action at a time — current step only, nothing
-                more.
+              <p className="mt-5 text-base leading-relaxed text-olive">
+                Paste installation guides, SOPs, manuals, or technical procedures.
+                Marbel breaks the job into phases and walks you through it one step
+                at a time.
               </p>
             </div>
 
-            <div className="mx-auto mt-10 max-w-4xl space-y-6">
+            <div className="mx-auto mt-14 max-w-4xl space-y-8">
               <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
 
-              <div className="grid grid-cols-1 gap-0 lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
+              {/* Two-column input */}
+              <div className="grid grid-cols-1 gap-0 lg:grid-cols-[1fr_auto_1fr] lg:gap-8">
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                    Option 1 — Paste Technical Documentation
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-taupe">
+                    Paste documentation
                   </p>
                   <textarea
                     value={document}
@@ -114,23 +116,23 @@ export default function Home() {
                       setDocument(e.target.value);
                       if (e.target.value) setUploadedDocument(null);
                     }}
-                    placeholder="Paste technical documentation here..."
+                    placeholder="Paste technical documentation here…"
                     rows={14}
-                    className="w-full resize-y rounded-md border border-zinc-700 bg-zinc-900 p-4 text-[1rem] leading-relaxed text-zinc-100 placeholder:text-zinc-600 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    className="w-full resize-y border border-beige bg-white px-4 py-3.5 text-[0.95rem] leading-relaxed text-charcoal placeholder:text-stone focus:border-charcoal focus:outline-none"
                   />
                 </div>
 
                 <div className="my-6 flex items-center justify-center lg:my-0 lg:flex-col">
-                  <div className="h-px flex-1 bg-zinc-800 lg:h-full lg:w-px" />
-                  <span className="px-3 text-xs font-bold uppercase tracking-widest text-zinc-600 lg:py-3">
-                    Or
+                  <div className="h-px flex-1 bg-beige lg:h-full lg:w-px" />
+                  <span className="px-3 text-xs font-bold uppercase tracking-widest text-stone lg:py-3">
+                    or
                   </span>
-                  <div className="h-px flex-1 bg-zinc-800 lg:h-full lg:w-px" />
+                  <div className="h-px flex-1 bg-beige lg:h-full lg:w-px" />
                 </div>
 
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                    Option 2 — Upload Documentation
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-taupe">
+                    Upload a document
                   </p>
                   <DocumentUpload
                     onExtracted={(doc) => {
@@ -142,11 +144,11 @@ export default function Home() {
               </div>
 
               {error && (
-                <div className="rounded-md border border-orange-700 bg-orange-500/10 px-4 py-3 text-sm font-medium text-orange-300">
+                <div className="border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
                   {errorId ? (
                     <>
                       <p>Something went wrong.</p>
-                      <p className="mt-1 font-mono text-xs text-orange-400">
+                      <p className="mt-1 font-mono text-xs text-rose-500">
                         Error ID: {errorId}
                       </p>
                     </>
@@ -159,7 +161,7 @@ export default function Home() {
               <div className="flex justify-end">
                 <button
                   onClick={handleGenerate}
-                  className="rounded-md bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-widest text-zinc-950 transition hover:bg-orange-400"
+                  className="border border-charcoal bg-charcoal px-7 py-3 text-sm font-semibold uppercase tracking-widest text-ivory transition hover:bg-ink"
                 >
                   Generate Workflow
                 </button>

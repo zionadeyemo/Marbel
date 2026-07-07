@@ -7,7 +7,9 @@ html {
 }
 
 body {
-  background-color: #f4f6f9;
+  background-color: #faf8f5;
+  color: #2e2b27;
+  font-family: var(--font-sans, system-ui, sans-serif);
 }
 
 @keyframes spin-slow {

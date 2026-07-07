@@ -113,46 +113,44 @@ export default function DocumentUpload({
   if (state.phase === "done") {
     const { metadata } = state.document;
     return (
-      <div className="rounded-md border border-zinc-700 bg-zinc-900 p-5">
+      <div className="border border-beige bg-warm p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-emerald-700 bg-emerald-500/10 text-emerald-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-sage bg-sage-light/30 text-sage">
               <CheckIcon />
             </div>
             <div>
-              <p className="font-semibold text-zinc-100">{metadata.filename}</p>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-zinc-400">
-                <span className="rounded-sm border border-zinc-700 px-1.5 py-0.5 uppercase tracking-wide">
+              <p className="font-semibold text-charcoal">{metadata.filename}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-olive">
+                <span className="border border-beige px-1.5 py-0.5 uppercase tracking-wide">
                   {FILE_TYPE_LABEL[metadata.fileType]}
                 </span>
                 {metadata.pages != null && <span>{metadata.pages} pages</span>}
                 <span>{formatFileSize(metadata.sizeBytes)}</span>
                 {metadata.ocrUsed && (
-                  <span className="rounded-sm border border-orange-700 px-1.5 py-0.5 text-orange-400">
-                    OCR
-                  </span>
+                  <span className="border border-stone px-1.5 py-0.5 text-olive">OCR</span>
                 )}
               </div>
             </div>
           </div>
           <button
             onClick={reset}
-            className="shrink-0 rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
+            className="shrink-0 border border-beige px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-olive transition hover:border-stone hover:text-charcoal"
           >
-            Replace Document
+            Replace
           </button>
         </div>
 
-        <p className="mt-3 text-sm font-medium text-emerald-400">
+        <p className="mt-3 text-sm font-medium text-sage">
           Ready for workflow generation.
         </p>
 
         <div className="mt-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-taupe">
             Extracted Text Preview
           </p>
-          <div className="max-h-48 overflow-y-auto rounded-md border border-zinc-800 bg-zinc-950 p-3">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-400">
+          <div className="max-h-44 overflow-y-auto border border-beige bg-ivory p-3">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-olive">
               {state.document.text.slice(0, 1000)}
               {state.document.text.length > 1000 ? "…" : ""}
             </p>
@@ -164,9 +162,9 @@ export default function DocumentUpload({
 
   if (state.phase === "uploading" || state.phase === "ocr") {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-md border border-zinc-700 bg-zinc-900 px-6 py-12 text-center">
-        <div className="spinner h-8 w-8 rounded-full border-[3px] border-zinc-700 border-t-orange-500" />
-        <p className="text-sm font-medium uppercase tracking-widest text-zinc-500">
+      <div className="flex flex-col items-center justify-center gap-3 border border-beige bg-warm px-6 py-12 text-center">
+        <div className="spinner h-7 w-7 rounded-full border-2 border-beige border-t-charcoal" />
+        <p className="text-xs font-semibold uppercase tracking-widest text-taupe">
           {state.phase === "ocr"
             ? "Scanned document detected. Running OCR…"
             : "Extracting document text…"}
@@ -187,19 +185,19 @@ export default function DocumentUpload({
         onClick={() => inputRef.current?.click()}
         role="button"
         tabIndex={0}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-md border-2 border-dashed px-6 py-12 text-center transition ${
+        className={`flex cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed px-6 py-12 text-center transition ${
           isDragOver
-            ? "border-orange-500 bg-orange-500/5"
-            : "border-zinc-700 bg-zinc-900 hover:border-zinc-600"
+            ? "border-charcoal bg-warm"
+            : "border-beige bg-ivory hover:border-stone"
         }`}
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-md border border-zinc-700 text-zinc-400">
+        <div className="flex h-11 w-11 items-center justify-center border border-beige text-taupe">
           <PaperclipIcon />
         </div>
-        <p className="text-sm font-medium text-zinc-300">
+        <p className="text-sm text-olive">
           Drop a PDF, Word document, PowerPoint, Markdown, or Text file here.
         </p>
-        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+        <p className="text-xs font-semibold uppercase tracking-widest text-stone">
           or click to browse
         </p>
         <input
@@ -212,11 +210,11 @@ export default function DocumentUpload({
       </div>
 
       {state.phase === "error" && (
-        <div className="mt-3 rounded-md border border-orange-700 bg-orange-500/10 px-4 py-3 text-sm font-medium text-orange-300">
+        <div className="mt-3 border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
           {state.errorId ? (
             <>
               <p>Something went wrong.</p>
-              <p className="mt-1 font-mono text-xs text-orange-400">
+              <p className="mt-1 font-mono text-xs text-rose-500">
                 Error ID: {state.errorId}
               </p>
             </>
@@ -231,7 +229,7 @@ export default function DocumentUpload({
 
 function PaperclipIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
       <path d="M21 11.5l-8.5 8.5a4 4 0 0 1-5.66-5.66l9-9a3 3 0 0 1 4.24 4.24l-8.5 8.5a2 2 0 0 1-2.83-2.83l7.5-7.5" />
     </svg>
   );
@@ -239,7 +237,7 @@ function PaperclipIcon() {
 
 function CheckIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-5 w-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
       <path d="M5 12l5 5L20 7" />
     </svg>
   );
