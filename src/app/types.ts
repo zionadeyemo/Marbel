@@ -13,25 +13,22 @@ export type WorkflowPhase = {
   steps: WorkflowStep[];
 };
 
-export type SiteInstructionCategoryId =
-  | "installLocation"
-  | "networkInformation"
-  | "externalAntenna"
-  | "specialTesting"
-  | "customerNotes"
-  | "siteAccessRequirements";
-
 export type SiteInstructionCategory = {
-  id: SiteInstructionCategoryId;
+  id: string;
   title: string;
   items: string[];
 };
 
 export type SiteInstructions = {
-  // Placeholder for a future model call that condenses `categories`
-  // into a short bullet digest. Empty array renders an empty-state, not an error.
   aiSummary: string[];
   categories: SiteInstructionCategory[];
+};
+
+export type DocumentClassification = {
+  isWorkflowDocument: boolean;
+  confidence: number;
+  reason: string;
+  documentType: string;
 };
 
 export type WorkflowPlan = {
@@ -40,6 +37,7 @@ export type WorkflowPlan = {
   tools: string[];
   phases: WorkflowPhase[];
   siteInstructions?: SiteInstructions;
+  documentClassification?: DocumentClassification;
 };
 
 export type FlatStep = WorkflowStep & {
